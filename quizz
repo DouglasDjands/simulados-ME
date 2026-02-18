@@ -54,16 +54,7 @@
 </div>
 
 <script>
-//const bancoDados = [{p:1, q:"O nome tecnicamente correto do cabo que conecta o aparelho ao cabeçote é:", o:["Cabo BX","Conduite","Cabo grau 20","Cabo coaxial"], r:3},
-{p:1, q:"O processo para comparar um instrumento com um padrão é:", o:["Angulação","Atenuação","Correlação","Calibração"], r:3},
-{p:1, q:"As ondas de compressão também são denominadas:", o:["Ondas de Lamb","Ondas de corte","Ondas transversais","Ondas longitudinais"], r:3},
-{p:1, q:"As ondas de Rayleigh são também denominadas:", o:["Ondas de corte","Ondas longitudinais","Ondas transversais","Ondas de superfície"], r:3},
-{p:1, q:"Material usado entre a face do cabeçote e a superfície para melhorar a transmissão:", o:["Agente umedecedor","Transmissor acústico","Lubrificante","Acoplante"], r:3},
-{p:1, q:"O material piezelétrico que vibra para produzir ondas sônicas é o:", o:["Bloco de apoio","Cunha de lucite","Acoplante","Cristal"], r:3},
-{p:1, q:"O método que emprega dois cabeçotes em superfícies opostas é:", o:["Exame por contato","Ondas de Lamb","Exame por transparência","Imersão"], r:2},
-{p:1, q:"O número de ondas completas na unidade de tempo é:", o:["Amplitude","Duração do pulso","Comprimento de onda","Frequência"], r:3},
-{p:1, q:"Método onde a peça não toca o cabeçote (separada por líquido):", o:["Contato","Superficiais","Transparência","Imersão"], r:3},
-{p:1, q:"Limite entre dois materiais diferentes em contato:", o:["Rarefator","Refrator","Marcador","Interface"], r:3},];
+//const bancoDados = [];
 
 let qAtuais = [];
 let respostasUser = {};
