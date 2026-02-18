@@ -3,141 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulado Douglas - Inspeção</title>
+    <title>Simulado de Inspeção - Douglas</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 15px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; padding: 10px; }
+        .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        .option { padding: 12px; border: 1px solid #ddd; margin: 8px 0; cursor: pointer; border-radius: 5px; }
-        .selected { background: #d1e7ff !important; border-color: #007bff !important; }
-        .nav-btns { display: flex; justify-content: space-between; margin-top: 20px; }
-        button { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-main { background: #007bff; color: white; width: 100%; margin-bottom: 10px; }
-        .btn-nav { background: #6c757d; color: white; }
-        .btn-finish { background: #28a745; color: white; }
-        .correct { color: #28a745; font-weight: bold; }
-        .wrong { color: #dc3545; text-decoration: line-through; }
-        .result-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        .btn-menu:hover { background-color: #2980b9; }
+        .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .option:hover { background: #eef2f3; border-color: #3498db; }
+        .selected { background: #d6eaf8 !important; border-color: #3498db !important; }
+        .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; }
+        button { padding: 10px 25px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-prev { background: #95a5a6; color: white; }
+        .btn-next { background: #27ae60; color: white; }
+        .correct { color: #27ae60; font-weight: bold; }
+        .wrong { color: #e74c3c; font-weight: bold; text-decoration: line-through; }
+        .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
     </style>
 </head>
 <body>
 
 <div id="menu" class="container">
-    <h1>Simulado de Inspeção ME</h1>
-    <button class="btn-main" onclick="iniciar('total')">Simulado Completo</button>
-    <div style="margin: 20px 0; padding: 15px; border: 1px solid #eee;">
-        <label>Escolher Prova (1 a 12): </label>
-        <select id="numProva">
+    <h1>Simulado de Inspeção (ME)</h1>
+    <button class="btn-menu" onclick="iniciarSimulado('total')">1 - Simulado Completo (Todas)</button>
+    <div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+        <label>2 - Escolher Prova: </label>
+        <select id="escolhaProva" style="padding: 8px; border-radius: 4px;">
             <option value="1">Prova 01</option>
-            <option value="2">Prova 02 (Ainda não carregada)</option>
+            <option value="2">Prova 02</option>
         </select>
-        <button onclick="iniciar('especifica')">Começar</button>
+        <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar</button>
     </div>
+    <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
 </div>
 
 <div id="quiz" class="container hidden">
-    <div id="status" style="margin-bottom: 10px; color: #666;"></div>
-    <h3 id="txtPergunta"></h3>
-    <div id="listaOpcoes"></div>
+    <div id="progresso" style="font-weight: bold; color: #7f8c8d; margin-bottom: 10px;"></div>
+    <div id="pergunta" style="font-size: 18px; margin-bottom: 20px; font-weight: 500;"></div>
+    <div id="opcoes"></div>
     <div class="nav-btns">
-        <button class="btn-nav" id="btnVoltar" onclick="navegar(-1)">Voltar</button>
-        <button class="btn-nav" id="btnAvancar" onclick="navegar(1)">Avançar</button>
-        <button class="btn-finish hidden" id="btnFinalizar" onclick="finalizar()">Finalizar</button>
+        <button class="btn-prev" id="voltar" onclick="mudarQuestao(-1)">Voltar</button>
+        <button class="btn-next" id="avancar" onclick="mudarQuestao(1)">Avançar</button>
+        <button class="btn-next hidden" id="finalizar" onclick="verResultado()">Finalizar Simulado</button>
     </div>
 </div>
 
 <div id="resultado" class="container hidden">
-    <h2 id="notaFinal"></h2>
-    <div id="analiseDetalhada"></div>
-    <button class="btn-main" onclick="location.reload()">Reiniciar</button>
+    <h2 id="placar" style="text-align: center;"></h2>
+    <div id="detalhes"></div>
+    <button class="btn-menu" onclick="location.reload()">Reiniciar</button>
 </div>
 
 <script>
-// PROVA 01 - CARREGADA DO PDF
-const bancoDados = [
-    {p:1, q:"O nome tecnicamente correto do cabo que conecta o aparelho ao cabeçote é:", o:["Cabo BX","Conduite","Cabo condutor grau 20","Cabo coaxial"], r:3},
-    {p:1, q:"O processo para comparar um instrumento com um padrão é:", o:["Angulação","Atenuação","Correlação","Calibração"], r:3},
-    {p:1, q:"As ondas de compressão também são denominadas:", o:["Ondas de Lamb","Ondas de corte","Ondas transversais","Ondas longitudinais"], r:3},
-    {p:1, q:"As ondas de Rayleigh são também denominadas:", o:["Ondas de corte","Ondas longitudinais","Ondas transversais","Ondas de superfície"], r:3},
-    {p:1, q:"Material usado entre a face do cabeçote e a superfície para melhorar a transmissão:", o:["Agente umedecedor","Transmissor acústico","lubrificante","Acoplante"], r:3},
-    {p:1, q:"O material piezelétrico existente num cabeçote, que vibra para produzir ondas sônicas é:", o:["Bloco de apoio","Cunha de lucite","Acoplante","Cristal"], r:3},
-    {p:1, q:"O método de exame que emprega dois cabeçotes em superfícies opostas é:", o:["Exame por contato","Ondas de Lamb","Exame por transparência","Nenhuma anterior"], r:2},
-    {p:1, q:"O número de ondas completas que passam num determinado ponto na unidade de tempo é:", o:["Amplitude","Duração de um pulso","Comprimento de onda","Frequência"], r:3},
-    {p:1, q:"Método onde a peça não está em contato com o cabeçote, separada por líquido:", o:["Exame por contato","Exame com ondas superficiais","Método por transparência","Exame por imersão"], r:3},
-    {p:1, q:"O limite entre dois materiais diferentes em contato é denominado:", o:["Rarefator","Refrator","Marcador","Interface"], r:3},
-    {p:1, q:"Ondas com movimento de partículas paralelo ao sentido de propagação são:", o:["Transversais","Superficiais","De lamb","Longitudinais"], r:3},
-    {p:1, q:"Outra maneira de dizer 25 milhões de ciclos por segundo é:", o:["25 quilociclos","2.500 quilociclos","25 microciclos","25 megaciclos"], r:3},
-    {p:1, q:"A distância de um ponto de uma onda ao ponto correspondente da próxima onda é:", o:["Frequência","Velocidade","Amplitude","Comprimento de onda"], r:3},
-    {p:1, q:"Técnica onde o feixe emitido faz um ângulo com a superfície da peça:", o:["Técnica de imersão","Exame por contato","Exame por transferência","Exame com cabeçote angular"], r:3},
-    {p:1, q:"O ângulo marcado num cabeçote angular de aço corresponde à direção com a normal:", o:["Normal oblíqua","Normal à superfície","Plano da superfície","Normal à superfície (peça de aço)"], r:3},
-    {p:1, q:"O ponto de emissão de um certo cabeçote angular:", o:["Depende do material","Não se altera","Pode ser modificado","Varia com o desgaste da sapata"], r:3},
-    {p:1, q:"A maioria dos exames de ultrassom é feita na frequência de:", o:["1 a 25 quilociclos","1 a 1.000 quilociclos","15 a 100 megaciclos","1 a 25 megaciclos"], r:3},
-    {p:1, q:"Indique a frequência com melhor penetração em aço de granulação grosseira:", o:["2,25 MHz","5,0 MHz","10 mc","1,0 MHz"], r:3},
-    {p:1, q:"Exame com cabeçote normal em chapa plana detectará:", o:["Defeitos transversais","Defeitos longitudinais","Defeitos laminares paralelos","Nenhum anterior"], r:2},
-    {p:1, q:"Por que se usa acoplante?", o:["Lubrificante","O cristal não vibra sem ele","Fecha circuito elétrico","Evitar reflexão total pelo ar na interface"], r:3},
-    {p:1, q:"Ondas que se propagam na superfície de forma elíptica são:", o:["Longitudinais","Transversais","De Lamb","Rayleigh"], r:3},
-    {p:1, q:"A velocidade da onda longitudinal em relação à transversal é aproximadamente:", o:["A metade","A mesma","O triplo","O dobro"], r:3},
-    {p:1, q:"Qual material não pode ser examinado por ultrassom?", o:["Vidro","Alumínio","Aço","Nenhuma anterior"], r:3},
-    {p:1, q:"Ondas usadas para detectar defeitos laminares em chapas finas:", o:["Longitudinais","Transversais","Rayleigh","De Lamb"], r:3},
-    {p:1, q:"O efeito piezelétrico é a conversão de:", o:["Calor em som","Som em luz","Energia elétrica em mecânica","Pressão em voltagem e vice-versa"], r:3},
-    {p:1, q:"Cabeçotes de cristal duplo são usados para:", o:["Grandes espessuras","Peças brutas","Ângulos retos","Pequenas espessuras e corrosão"], r:3},
-    {p:1, q:"A unidade de frequência é:", o:["Metro","Segundo","Newton","Hertz"], r:3},
-    {p:1, q:"Ondas longitudinais atravessam:", o:["Apenas sólidos","Apenas líquidos","Apenas gases","Sólidos, líquidos e gases"], r:3},
-    {p:1, q:"A técnica de tandem é usada para:", o:["Corrosão","Laminados","Descontinuidades perpendiculares","Porosidade"], r:2},
-    {p:1, q:"Divergência do feixe ocorre no:", o:["Campo próximo","Campo distante","Interface","Foco"], r:1}
-    // Adicionaremos as outras provas aqui depois
+const bancoQuestoes = [
+    // PROVA 01
+    {p:1, q:"O nome tecnicamente correto do cabo que conecta o aparelho ao cabeçote é:", o:["Cabo BX", "Conduite", "Cabo condutor grau 20", "Cabo coaxial"], r:3},
+    {p:1, q:"O processo para comparar um instrumento com um padrão é:", o:["Angulação", "Atenuação", "Correlação", "Calibração"], r:3},
+    {p:1, q:"As ondas de compressão também são denominadas:", o:["Ondas de Lamb", "Ondas de corte", "Ondas transversais", "Ondas longitudinais"], r:3},
+    {p:1, q:"As ondas de Rayleigh são também denominadas:", o:["Ondas de corte", "Ondas longitudinais", "Ondas transversais", "Ondas de superfície"], r:3},
+    {p:1, q:"Material usado para melhorar a transmissão das ondas ultrassônicas:", o:["Agente umedecedor", "Transmissor acústico", "Lubrificante", "Acoplante"], r:3},
+    {p:1, q:"O material piezelétrico que vibra para produzir ondas sônicas é o:", o:["Bloco de apoio", "Cunha de lucite", "Acoplante", "Cristal"], r:3},
+    {p:1, q:"O método que emprega dois cabeçotes em superfícies opostas é:", o:["Exame por contato", "Ondas de Lamb", "Exame por transparência", "Nenhuma anterior"], r:2},
+    {p:1, q:"O número de ondas completas na unidade de tempo é:", o:["Amplitude", "Duração do pulso", "Comprimento de onda", "Frequência"], r:3},
+    {p:1, q:"Método onde a peça não toca o cabeçote (separada por líquido):", o:["Exame por contato", "Ondas superficiais", "Transparência", "Exame por imersão"], r:3},
+    {p:1, q:"O limite entre dois materiais diferentes em contato é denominado:", o:["Rarefator", "Refrator", "Marcador", "Interface"], r:3},
+
+    // PROVA 02
+    {p:2, q:"Qual frequência perde mais energia em peça de granulação grosseira?", o:["1,0 MHz", "10,0 MHz", "5,0 MHz", "2,25 MHz"], r:1},
+    {p:2, q:"Qual cristal de quartzo possui maior espessura?", o:["1,0 MHz", "5,0 MHz", "10,0 MHz", "2,25 MHz"], r:0},
+    {p:2, q:"Cabeçotes com cristal apoiado em cunha plástica são usados para:", o:["Feixe normal", "Técnica de imersão", "Feixe em ângulo", "Nenhuma anterior"], r:2},
+    {p:2, q:"Ângulo de propagação no segundo meio após atravessar a interface:", o:["Ângulo de incidência", "Ângulo de rarefação", "Ângulo de reflexão", "Ângulo de refração"], r:3},
+    {p:2, q:"O espalhamento do feixe por reflexão em superfície irregular é:", o:["Angulação", "Refração", "Rarefação", "Dispersão"], r:3},
+    {p:2, q:"O ângulo de reflexão é:", o:["Igual ao de incidência", "Depende da frequência", "Igual ao de refração", "Depende do acoplante"], r:0},
+    {p:2, q:"Fluxo de curta duração e intenso de energia elétrica alternada:", o:["Onda contínua", "Pico de voltagem CC", "Onda ultrassônica", "Pulso"], r:3},
+    {p:2, q:"Ondas longitudinais atravessam:", o:["Apenas sólidos", "Apenas líquidos", "Apenas gases", "Sólidos, líquidos e gases"], r:3}
 ];
 
-let qAtuais = [];
-let respostasUser = {};
-let idx = 0;
+let questoesAtuais = [];
+let respostasUsuario = {};
+let indexAtual = 0;
 
-function iniciar(modo) {
-    const pSel = document.getElementById('numProva').value;
-    if(modo === 'total') qAtuais = bancoDados;
-    else qAtuais = bancoDados.filter(q => q.p == pSel);
+function iniciarSimulado(modo) {
+    const pSel = document.getElementById('escolhaProva').value;
+    if(modo === 'total') questoesAtuais = bancoQuestoes;
+    else if(modo === 'especifica') questoesAtuais = bancoQuestoes.filter(q => q.p == pSel);
+    else questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
 
-    if(qAtuais.length === 0) return alert("Prova não carregada.");
     document.getElementById('menu').classList.add('hidden');
     document.getElementById('quiz').classList.remove('hidden');
-    render();
+    indexAtual = 0;
+    respostasUsuario = {};
+    mostrarQuestao();
 }
 
-function render() {
-    const q = qAtuais[idx];
-    document.getElementById('status').innerText = `Questão ${idx + 1} de ${qAtuais.length}`;
-    document.getElementById('txtPergunta').innerText = q.q;
+function mostrarQuestao() {
+    const q = questoesAtuais[indexAtual];
+    document.getElementById('progresso').innerText = `Questão ${indexAtual + 1} de ${questoesAtuais.length} (Prova 0${q.p})`;
+    document.getElementById('pergunta').innerText = q.q;
+    
     let html = "";
     q.o.forEach((opt, i) => {
-        html += `<div class="option ${respostasUser[idx] === i ? 'selected' : ''}" onclick="escolher(${i})">${opt}</div>`;
+        html += `<div class="option ${respostasUsuario[indexAtual] === i ? 'selected' : ''}" onclick="selecionar(${i})">${opt}</div>`;
     });
-    document.getElementById('listaOpcoes').innerHTML = html;
-    document.getElementById('btnVoltar').disabled = idx === 0;
-    document.getElementById('btnAvancar').classList.toggle('hidden', idx === qAtuais.length - 1);
-    document.getElementById('btnFinalizar').classList.toggle('hidden', idx !== qAtuais.length - 1);
+    document.getElementById('opcoes').innerHTML = html;
+
+    document.getElementById('voltar').disabled = indexAtual === 0;
+    if (indexAtual === questoesAtuais.length - 1) {
+        document.getElementById('avancar').classList.add('hidden');
+        document.getElementById('finalizar').classList.remove('hidden');
+    } else {
+        document.getElementById('avancar').classList.remove('hidden');
+        document.getElementById('finalizar').classList.add('hidden');
+    }
 }
 
-function escolher(i) { respostasUser[idx] = i; render(); }
-function navegar(passo) { idx += passo; render(); }
+function selecionar(i) {
+    respostasUsuario[indexAtual] = i;
+    mostrarQuestao();
+}
 
-function finalizar() {
+function mudarQuestao(passo) {
+    indexAtual += passo;
+    mostrarQuestao();
+}
+
+function verResultado() {
     document.getElementById('quiz').classList.add('hidden');
     document.getElementById('resultado').classList.remove('hidden');
+    
     let acertos = 0;
     let html = "";
-    qAtuais.forEach((q, i) => {
+    questoesAtuais.forEach((q, i) => {
         const correta = q.r;
-        const user = respostasUser[i];
+        const user = respostasUsuario[i];
         const acertou = user === correta;
         if(acertou) acertos++;
-        html += `<div class="result-item">
+
+        html += `<div class="result-card">
             <p><strong>${i+1}. ${q.q}</strong></p>
-            <p>Sua: <span class="${acertou?'correct':'wrong'}">${q.o[user] || '--'}</span> | Correta: <span class="correct">${q.o[correta]}</span></p>
+            <p>Sua resposta: <span class="${acertou ? 'correct' : 'wrong'}">${q.o[user] || 'Não respondida'}</span></p>
+            ${!acertou ? `<p>Resposta correta: <span class="correct">${q.o[correta]}</span></p>` : ''}
         </div>`;
     });
-    const nota = (acertos / qAtuais.length) * 10;
-    document.getElementById('notaFinal').innerHTML = `Nota: ${nota.toFixed(1)} / 10.0<br>${nota >= 7 ? 'APROVADO' : 'REPROVADO'}`;
-    document.getElementById('analiseDetalhada').innerHTML = html;
+
+    const nota = (acertos / questoesAtuais.length) * 10;
+    const aprovado = nota >= 7;
+    document.getElementById('placar').innerHTML = `Nota: ${nota.toFixed(1)} / 10.0<br><span style="color: ${aprovado ? '#27ae60' : '#e74c3c'}">${aprovado ? 'APROVADO' : 'REPROVADO'}</span>`;
+    document.getElementById('detalhes').innerHTML = html;
 }
 </script>
 </body>
