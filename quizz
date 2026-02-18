@@ -8,8 +8,7 @@
         body { font-family: sans-serif; background: #f0f2f5; padding: 15px; }
         .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-        .option { padding: 12px; border: 1px solid #ddd; margin: 8px 0; cursor: pointer; border-radius: 5px; transition: 0.3s; }
-        .option:hover { background: #f8f9fa; }
+        .option { padding: 12px; border: 1px solid #ddd; margin: 8px 0; cursor: pointer; border-radius: 5px; }
         .selected { background: #d1e7ff !important; border-color: #007bff !important; }
         .nav-btns { display: flex; justify-content: space-between; margin-top: 20px; }
         button { padding: 12px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -25,36 +24,69 @@
 
 <div id="menu" class="container">
     <h1>Simulado de Inspeção ME</h1>
-    <button class="btn-main" onclick="iniciar('total')">1 - Prova Total (480 Questões)</button>
-    <div style="margin: 20px 0; border: 1px solid #eee; padding: 15px; border-radius: 5px;">
-        <label>2 - Escolher Prova (1 a 12): </label>
-        <select id="numProva" style="padding: 5px;">
-            <script>for(let i=1;i<=12;i++) document.write(`<option value="${i}">Prova ${i}</option>`)</script>
+    <button class="btn-main" onclick="iniciar('total')">Simulado Completo</button>
+    <div style="margin: 20px 0; padding: 15px; border: 1px solid #eee;">
+        <label>Escolher Prova (1 a 12): </label>
+        <select id="numProva">
+            <option value="1">Prova 01</option>
+            <option value="2">Prova 02 (Ainda não carregada)</option>
         </select>
-        <button class="btn-main" style="width: auto; margin: 0 0 0 10px;" onclick="iniciar('especifica')">Começar</button>
+        <button onclick="iniciar('especifica')">Começar</button>
     </div>
-    <button class="btn-main" onclick="iniciar('random')">3 - 40 Questões Aleatórias</button>
 </div>
 
 <div id="quiz" class="container hidden">
-    <div id="status" style="font-weight: bold; color: #666; margin-bottom: 10px;"></div>
+    <div id="status" style="margin-bottom: 10px; color: #666;"></div>
     <h3 id="txtPergunta"></h3>
     <div id="listaOpcoes"></div>
     <div class="nav-btns">
         <button class="btn-nav" id="btnVoltar" onclick="navegar(-1)">Voltar</button>
         <button class="btn-nav" id="btnAvancar" onclick="navegar(1)">Avançar</button>
-        <button class="btn-finish hidden" id="btnFinalizar" onclick="finalizar()">Finalizar e Ver Resultado</button>
+        <button class="btn-finish hidden" id="btnFinalizar" onclick="finalizar()">Finalizar</button>
     </div>
 </div>
 
 <div id="resultado" class="container hidden">
     <h2 id="notaFinal"></h2>
     <div id="analiseDetalhada"></div>
-    <button class="btn-main" onclick="location.reload()">Reiniciar Simulado</button>
+    <button class="btn-main" onclick="location.reload()">Reiniciar</button>
 </div>
 
 <script>
-//const bancoDados = [];
+// PROVA 01 - CARREGADA DO PDF
+const bancoDados = [
+    {p:1, q:"O nome tecnicamente correto do cabo que conecta o aparelho ao cabeçote é:", o:["Cabo BX","Conduite","Cabo condutor grau 20","Cabo coaxial"], r:3},
+    {p:1, q:"O processo para comparar um instrumento com um padrão é:", o:["Angulação","Atenuação","Correlação","Calibração"], r:3},
+    {p:1, q:"As ondas de compressão também são denominadas:", o:["Ondas de Lamb","Ondas de corte","Ondas transversais","Ondas longitudinais"], r:3},
+    {p:1, q:"As ondas de Rayleigh são também denominadas:", o:["Ondas de corte","Ondas longitudinais","Ondas transversais","Ondas de superfície"], r:3},
+    {p:1, q:"Material usado entre a face do cabeçote e a superfície para melhorar a transmissão:", o:["Agente umedecedor","Transmissor acústico","lubrificante","Acoplante"], r:3},
+    {p:1, q:"O material piezelétrico existente num cabeçote, que vibra para produzir ondas sônicas é:", o:["Bloco de apoio","Cunha de lucite","Acoplante","Cristal"], r:3},
+    {p:1, q:"O método de exame que emprega dois cabeçotes em superfícies opostas é:", o:["Exame por contato","Ondas de Lamb","Exame por transparência","Nenhuma anterior"], r:2},
+    {p:1, q:"O número de ondas completas que passam num determinado ponto na unidade de tempo é:", o:["Amplitude","Duração de um pulso","Comprimento de onda","Frequência"], r:3},
+    {p:1, q:"Método onde a peça não está em contato com o cabeçote, separada por líquido:", o:["Exame por contato","Exame com ondas superficiais","Método por transparência","Exame por imersão"], r:3},
+    {p:1, q:"O limite entre dois materiais diferentes em contato é denominado:", o:["Rarefator","Refrator","Marcador","Interface"], r:3},
+    {p:1, q:"Ondas com movimento de partículas paralelo ao sentido de propagação são:", o:["Transversais","Superficiais","De lamb","Longitudinais"], r:3},
+    {p:1, q:"Outra maneira de dizer 25 milhões de ciclos por segundo é:", o:["25 quilociclos","2.500 quilociclos","25 microciclos","25 megaciclos"], r:3},
+    {p:1, q:"A distância de um ponto de uma onda ao ponto correspondente da próxima onda é:", o:["Frequência","Velocidade","Amplitude","Comprimento de onda"], r:3},
+    {p:1, q:"Técnica onde o feixe emitido faz um ângulo com a superfície da peça:", o:["Técnica de imersão","Exame por contato","Exame por transferência","Exame com cabeçote angular"], r:3},
+    {p:1, q:"O ângulo marcado num cabeçote angular de aço corresponde à direção com a normal:", o:["Normal oblíqua","Normal à superfície","Plano da superfície","Normal à superfície (peça de aço)"], r:3},
+    {p:1, q:"O ponto de emissão de um certo cabeçote angular:", o:["Depende do material","Não se altera","Pode ser modificado","Varia com o desgaste da sapata"], r:3},
+    {p:1, q:"A maioria dos exames de ultrassom é feita na frequência de:", o:["1 a 25 quilociclos","1 a 1.000 quilociclos","15 a 100 megaciclos","1 a 25 megaciclos"], r:3},
+    {p:1, q:"Indique a frequência com melhor penetração em aço de granulação grosseira:", o:["2,25 MHz","5,0 MHz","10 mc","1,0 MHz"], r:3},
+    {p:1, q:"Exame com cabeçote normal em chapa plana detectará:", o:["Defeitos transversais","Defeitos longitudinais","Defeitos laminares paralelos","Nenhum anterior"], r:2},
+    {p:1, q:"Por que se usa acoplante?", o:["Lubrificante","O cristal não vibra sem ele","Fecha circuito elétrico","Evitar reflexão total pelo ar na interface"], r:3},
+    {p:1, q:"Ondas que se propagam na superfície de forma elíptica são:", o:["Longitudinais","Transversais","De Lamb","Rayleigh"], r:3},
+    {p:1, q:"A velocidade da onda longitudinal em relação à transversal é aproximadamente:", o:["A metade","A mesma","O triplo","O dobro"], r:3},
+    {p:1, q:"Qual material não pode ser examinado por ultrassom?", o:["Vidro","Alumínio","Aço","Nenhuma anterior"], r:3},
+    {p:1, q:"Ondas usadas para detectar defeitos laminares em chapas finas:", o:["Longitudinais","Transversais","Rayleigh","De Lamb"], r:3},
+    {p:1, q:"O efeito piezelétrico é a conversão de:", o:["Calor em som","Som em luz","Energia elétrica em mecânica","Pressão em voltagem e vice-versa"], r:3},
+    {p:1, q:"Cabeçotes de cristal duplo são usados para:", o:["Grandes espessuras","Peças brutas","Ângulos retos","Pequenas espessuras e corrosão"], r:3},
+    {p:1, q:"A unidade de frequência é:", o:["Metro","Segundo","Newton","Hertz"], r:3},
+    {p:1, q:"Ondas longitudinais atravessam:", o:["Apenas sólidos","Apenas líquidos","Apenas gases","Sólidos, líquidos e gases"], r:3},
+    {p:1, q:"A técnica de tandem é usada para:", o:["Corrosão","Laminados","Descontinuidades perpendiculares","Porosidade"], r:2},
+    {p:1, q:"Divergência do feixe ocorre no:", o:["Campo próximo","Campo distante","Interface","Foco"], r:1}
+    // Adicionaremos as outras provas aqui depois
+];
 
 let qAtuais = [];
 let respostasUser = {};
@@ -63,10 +95,9 @@ let idx = 0;
 function iniciar(modo) {
     const pSel = document.getElementById('numProva').value;
     if(modo === 'total') qAtuais = bancoDados;
-    else if(modo === 'especifica') qAtuais = bancoDados.filter(q => q.p == pSel);
-    else qAtuais = [...bancoDados].sort(() => 0.5 - Math.random()).slice(0, 40);
+    else qAtuais = bancoDados.filter(q => q.p == pSel);
 
-    if(qAtuais.length === 0) return alert("Nenhuma questão encontrada para esta prova.");
+    if(qAtuais.length === 0) return alert("Prova não carregada.");
     document.getElementById('menu').classList.add('hidden');
     document.getElementById('quiz').classList.remove('hidden');
     render();
@@ -74,7 +105,7 @@ function iniciar(modo) {
 
 function render() {
     const q = qAtuais[idx];
-    document.getElementById('status').innerText = `Questão ${idx + 1} de ${qAtuais.length} (Prova ${q.p})`;
+    document.getElementById('status').innerText = `Questão ${idx + 1} de ${qAtuais.length}`;
     document.getElementById('txtPergunta').innerText = q.q;
     let html = "";
     q.o.forEach((opt, i) => {
@@ -101,15 +132,13 @@ function finalizar() {
         if(acertou) acertos++;
         html += `<div class="result-item">
             <p><strong>${i+1}. ${q.q}</strong></p>
-            <p>Sua resposta: <span class="${acertou?'correct':'wrong'}">${q.o[user] || 'Não respondida'}</span></p>
-            ${!acertou ? `<p>Resposta correta: <span class="correct">${q.o[correta]}</span></p>` : ''}
+            <p>Sua: <span class="${acertou?'correct':'wrong'}">${q.o[user] || '--'}</span> | Correta: <span class="correct">${q.o[correta]}</span></p>
         </div>`;
     });
     const nota = (acertos / qAtuais.length) * 10;
-    document.getElementById('notaFinal').innerHTML = `Nota: ${nota.toFixed(1)} / 10.0<br>${nota >= 7 ? '✅ APROVADO' : '❌ REPROVADO'}`;
+    document.getElementById('notaFinal').innerHTML = `Nota: ${nota.toFixed(1)} / 10.0<br>${nota >= 7 ? 'APROVADO' : 'REPROVADO'}`;
     document.getElementById('analiseDetalhada').innerHTML = html;
 }
 </script>
 </body>
 </html>
-
