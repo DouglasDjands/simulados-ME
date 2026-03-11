@@ -12,20 +12,20 @@
         .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .btn-menu:hover { background-color: #2980b9; }
         .btn-continuar { background-color: #e67e22 !important; font-weight: bold; border: 2px solid #d35400; }
+        .btn-refazer { background-color: #27ae60 !important; font-weight: bold; margin-top: 20px; }
         
         .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .option:hover { background: #eef2f3; border-color: #3498db; }
         .selected { background: #d6eaf8 !important; border-color: #3498db !important; }
         
-        /* Ajuste dos Botões */
         .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
         .control-btns { display: flex; justify-content: center; margin-top: 15px; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
         
         button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-prev { background: #95a5a6; color: white; flex: 1; }
         .btn-next { background: #27ae60; color: white; flex: 1; }
-        .btn-exit { background: #e74c3c; color: white; } /* Vermelho para sair */
-        .btn-pause { background: #f39c12; color: white; } /* Laranja para pausar */
+        .btn-exit { background: #e74c3c; color: white; }
+        .btn-pause { background: #f39c12; color: white; }
         
         .correct { color: #27ae60; font-weight: bold; }
         .wrong { color: #e74c3c; font-weight: bold; text-decoration: line-through; }
@@ -58,7 +58,7 @@
             <option value="10">Prova 10</option>
             <option value="11">Prova 11</option>
             <option value="12">Prova 12</option>
-        </select>
+         </select>
         <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar</button>
     </div>
     <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
@@ -84,7 +84,8 @@
 <div id="resultado" class="container hidden">
     <h2 id="placar" style="text-align: center;"></h2>
     <div id="detalhes"></div>
-    <button class="btn-menu" onclick="reiniciarTudo()">Voltar ao Menu</button>
+    <button id="btnRefazerErros" class="btn-menu btn-refazer hidden" onclick="refazerErros()">🔄 REFAZER APENAS AS ERRADAS</button>
+    <button class="btn-menu" onclick="reiniciarTudo()">Voltar ao Menu Principal</button>
 </div>
 
 <script>
@@ -643,6 +644,7 @@ function retomarSimulado() {
 
 function exibirQuiz() {
     document.getElementById('menu').classList.add('hidden');
+    document.getElementById('resultado').classList.add('hidden');
     document.getElementById('quiz').classList.remove('hidden');
     mostrarQuestao();
 }
@@ -690,8 +692,34 @@ function verResultado() {
             ${!acertou?`<p>Correta: <span class="correct">${q.o[q.r]}</span></p>`:''}
         </div>`;
     });
+
+    // Mostrar ou esconder botão de refazer erros
+    const btnRefazer = document.getElementById('btnRefazerErros');
+    if (acertos < questoesAtuais.length) {
+        btnRefazer.classList.remove('hidden');
+    } else {
+        btnRefazer.classList.add('hidden');
+    }
+
     document.getElementById('placar').innerText = `Total: ${acertos} de ${questoesAtuais.length}`;
     document.getElementById('detalhes').innerHTML = html;
+}
+
+function refazerErros() {
+    // Filtra apenas as questões que o usuário errou
+    const erradas = [];
+    questoesAtuais.forEach((q, i) => {
+        if (respostasUsuario[i] !== q.r) {
+            erradas.push(q);
+        }
+    });
+
+    if (erradas.length > 0) {
+        questoesAtuais = erradas;
+        indexAtual = 0;
+        respostasUsuario = new Array(questoesAtuais.length).fill(null);
+        exibirQuiz();
+    }
 }
 
 function reiniciarTudo() { location.reload(); }
