@@ -11,9 +11,12 @@
         h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
         .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
         .btn-menu:hover { background-color: #2980b9; }
-        .btn-continuar { background-color: #e67e22 !important; font-weight: bold; border: 2px solid #d35400; }
-        .btn-refazer { background-color: #27ae60 !important; font-weight: bold; margin-top: 20px; }
         
+        /* Botões Especiais */
+        .btn-continuar { background-color: #e67e22 !important; font-weight: bold; }
+        .btn-erros { background-color: #e74c3c !important; font-weight: bold; border: 2px solid #c0392b; }
+        .btn-erros:disabled { background-color: #bdc3c7 !important; border: none; cursor: not-allowed; }
+
         .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .option:hover { background: #eef2f3; border-color: #3498db; }
         .selected { background: #d6eaf8 !important; border-color: #3498db !important; }
@@ -30,6 +33,7 @@
         .correct { color: #27ae60; font-weight: bold; }
         .wrong { color: #e74c3c; font-weight: bold; text-decoration: line-through; }
         .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
+        .badge { background: #fff; color: #e74c3c; padding: 2px 8px; border-radius: 10px; margin-left: 10px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -37,9 +41,15 @@
 <div id="menu" class="container">
     <h1>Simulado de Inspeção (ME)</h1>
     
-    <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">
-        ⚡ CONTINUAR ONDE PAREI
+    <button id="btnBancoErros" class="btn-menu btn-erros" onclick="iniciarSimulado('erros')">
+        📕 REFAZER MEUS ERROS ACUMULADOS <span id="countErros" class="badge">0</span>
     </button>
+
+    <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">
+        ⚡ CONTINUAR ÚLTIMO SIMULADO
+    </button>
+
+    <hr>
 
     <button class="btn-menu" onclick="iniciarSimulado('total')">1 - Simulado Completo (Todas)</button>
     
@@ -62,6 +72,8 @@
         <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar</button>
     </div>
     <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
+    
+    <button style="margin-top: 20px; background: none; color: #95a5a6; text-decoration: underline; font-size: 12px; width: 100%;" onclick="limparHistoricoErros()">Limpar histórico de erros permanentemente</button>
 </div>
 
 <div id="quiz" class="container hidden">
@@ -76,7 +88,7 @@
     </div>
 
     <div class="control-btns">
-        <button class="btn-exit" onclick="sairSemSalvar()">Sair sem Salvar</button>
+        <button class="btn-exit" onclick="sairSemSalvar()">Sair</button>
         <button class="btn-pause" onclick="salvarEPausar()">Pausar e Salvar</button>
     </div>
 </div>
@@ -84,7 +96,6 @@
 <div id="resultado" class="container hidden">
     <h2 id="placar" style="text-align: center;"></h2>
     <div id="detalhes"></div>
-    <button id="btnRefazerErros" class="btn-menu btn-refazer hidden" onclick="refazerErros()">🔄 REFAZER APENAS AS ERRADAS</button>
     <button class="btn-menu" onclick="reiniciarTudo()">Voltar ao Menu Principal</button>
 </div>
 
@@ -599,20 +610,40 @@ const bancoQuestoes = [
 let questoesAtuais = [];
 let indexAtual = 0;
 let respostasUsuario = [];
+let modoErros = false;
 
 window.onload = function() {
+    atualizarBadgeErros();
     if (localStorage.getItem('progressoDouglas')) {
         document.getElementById('btnRetomar').classList.remove('hidden');
     }
 };
 
+function atualizarBadgeErros() {
+    const errosGuardados = JSON.parse(localStorage.getItem('bancoErrosDouglas') || "[]");
+    const btn = document.getElementById('btnBancoErros');
+    const badge = document.getElementById('countErros');
+    
+    badge.innerText = errosGuardados.length;
+    btn.disabled = errosGuardados.length === 0;
+}
+
 function iniciarSimulado(tipo) {
     const escolha = document.getElementById('escolhaProva').value;
-    if (tipo === 'total') questoesAtuais = [...bancoQuestoes];
-    else if (tipo === 'especifica') questoesAtuais = bancoQuestoes.filter(q => q.p == escolha);
-    else if (tipo === 'random') questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
+    modoErros = false;
 
-    if (questoesAtuais.length === 0) return alert("Nenhuma questão encontrada!");
+    if (tipo === 'total') {
+        questoesAtuais = [...bancoQuestoes];
+    } else if (tipo === 'especifica') {
+        questoesAtuais = bancoQuestoes.filter(q => q.p == escolha);
+    } else if (tipo === 'random') {
+        questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
+    } else if (tipo === 'erros') {
+        questoesAtuais = JSON.parse(localStorage.getItem('bancoErrosDouglas') || "[]");
+        modoErros = true;
+    }
+
+    if (questoesAtuais.length === 0) return alert("Nenhum dado encontrado!");
 
     indexAtual = 0;
     respostasUsuario = new Array(questoesAtuais.length).fill(null);
@@ -622,14 +653,12 @@ function iniciarSimulado(tipo) {
 function salvarEPausar() {
     const dados = { questoes: questoesAtuais, index: indexAtual, respostas: respostasUsuario };
     localStorage.setItem('progressoDouglas', JSON.stringify(dados));
-    alert("Progresso salvo! Você pode continuar depois.");
+    alert("Progresso salvo!");
     location.reload();
 }
 
 function sairSemSalvar() {
-    if(confirm("Tem certeza? Seu progresso atual será perdido.")) {
-        location.reload();
-    }
+    if(confirm("Sair agora?")) location.reload();
 }
 
 function retomarSimulado() {
@@ -651,7 +680,7 @@ function exibirQuiz() {
 
 function mostrarQuestao() {
     const q = questoesAtuais[indexAtual];
-    document.getElementById('progresso').innerText = `Questão ${indexAtual + 1} de ${questoesAtuais.length}`;
+    document.getElementById('progresso').innerText = (modoErros ? "REVISANDO ERROS: " : "Simulado: ") + `Questão ${indexAtual + 1} de ${questoesAtuais.length}`;
     document.getElementById('pergunta').innerText = q.q;
     
     let html = "";
@@ -683,50 +712,48 @@ function verResultado() {
     
     let acertos = 0;
     let html = "";
+    
+    // Pegar erros já existentes para não duplicar
+    let bancoErros = JSON.parse(localStorage.getItem('bancoErrosDouglas') || "[]");
+
     questoesAtuais.forEach((q, i) => {
         const acertou = respostasUsuario[i] === q.r;
-        if(acertou) acertos++;
+        if(acertou) {
+            acertos++;
+            // Se o usuário acertou em modo de revisão, removemos a questão do banco de erros
+            bancoErros = bancoErros.filter(item => item.q !== q.q);
+        } else {
+            // Se errou, adicionamos ao banco de erros (se já não estiver lá)
+            const jaExiste = bancoErros.find(item => item.q === q.q);
+            if (!jaExiste) {
+                bancoErros.push(q);
+            }
+        }
+
         html += `<div class="result-card">
             <p><strong>${i+1}. ${q.q}</strong></p>
-            <p>Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Vazio'}</span></p>
+            <p>Sua Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Não respondida'}</span></p>
             ${!acertou?`<p>Correta: <span class="correct">${q.o[q.r]}</span></p>`:''}
         </div>`;
     });
 
-    // Mostrar ou esconder botão de refazer erros
-    const btnRefazer = document.getElementById('btnRefazerErros');
-    if (acertos < questoesAtuais.length) {
-        btnRefazer.classList.remove('hidden');
-    } else {
-        btnRefazer.classList.add('hidden');
-    }
-
-    document.getElementById('placar').innerText = `Total: ${acertos} de ${questoesAtuais.length}`;
+    // Salvar o banco de erros atualizado
+    localStorage.setItem('bancoErrosDouglas', JSON.stringify(bancoErros));
+    
+    document.getElementById('placar').innerText = `Resultado: ${acertos} de ${questoesAtuais.length}`;
     document.getElementById('detalhes').innerHTML = html;
+    atualizarBadgeErros();
 }
 
-function refazerErros() {
-    // Filtra apenas as questões que o usuário errou
-    const erradas = [];
-    questoesAtuais.forEach((q, i) => {
-        if (respostasUsuario[i] !== q.r) {
-            erradas.push(q);
-        }
-    });
-
-    if (erradas.length > 0) {
-        questoesAtuais = erradas;
-        indexAtual = 0;
-        respostasUsuario = new Array(questoesAtuais.length).fill(null);
-        exibirQuiz();
+function limparHistoricoErros() {
+    if(confirm("Isso apagará todas as questões salvas no seu banco de erros. Confirmar?")) {
+        localStorage.removeItem('bancoErrosDouglas');
+        atualizarBadgeErros();
     }
 }
 
 function reiniciarTudo() { location.reload(); }
 </script>
 
-<footer style="text-align: center; padding: 20px; font-family: sans-serif; color: #555;">
-    <p>Simulado de Ultrassom &copy; 2026 | <strong>Douglas Djands</strong></p>
-</footer>
 </body>
 </html>
