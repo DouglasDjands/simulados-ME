@@ -9,31 +9,31 @@
         .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        
+        .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .btn-menu:hover { background-color: #2980b9; }
         
-        /* Botões Especiais */
-        .btn-continuar { background-color: #e67e22 !important; font-weight: bold; }
-        .btn-erros { background-color: #e74c3c !important; font-weight: bold; border: 2px solid #c0392b; }
-        .btn-erros:disabled { background-color: #bdc3c7 !important; border: none; cursor: not-allowed; }
-
+        /* Botão de Erros Acumulados */
+        .btn-acumulado { background-color: #e74c3c !important; border: 2px solid #c0392b; position: relative; }
+        .btn-acumulado:hover { background-color: #c0392b !important; }
+        .badge { background: white; color: #e74c3c; padding: 2px 10px; border-radius: 20px; margin-left: 10px; font-size: 14px; }
+        
+        .btn-continuar { background-color: #e67e22 !important; }
+        
         .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .option:hover { background: #eef2f3; border-color: #3498db; }
         .selected { background: #d6eaf8 !important; border-color: #3498db !important; }
         
         .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
-        .control-btns { display: flex; justify-content: center; margin-top: 15px; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
-        
-        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
+        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
         .btn-prev { background: #95a5a6; color: white; flex: 1; }
         .btn-next { background: #27ae60; color: white; flex: 1; }
-        .btn-exit { background: #e74c3c; color: white; }
-        .btn-pause { background: #f39c12; color: white; }
         
-        .correct { color: #27ae60; font-weight: bold; }
-        .wrong { color: #e74c3c; font-weight: bold; text-decoration: line-through; }
         .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
-        .badge { background: #fff; color: #e74c3c; padding: 2px 8px; border-radius: 10px; margin-left: 10px; font-size: 14px; }
+        .correct { color: #27ae60; font-weight: bold; }
+        .wrong { color: #e74c3c; font-weight: bold; }
+        
+        .footer-info { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
     </style>
 </head>
 <body>
@@ -41,20 +41,18 @@
 <div id="menu" class="container">
     <h1>Simulado de Inspeção (ME)</h1>
     
-    <button id="btnBancoErros" class="btn-menu btn-erros" onclick="iniciarSimulado('erros')">
-        📕 REFAZER MEUS ERROS ACUMULADOS <span id="countErros" class="badge">0</span>
+    <button id="btnRefazerTudoErrado" class="btn-menu btn-acumulado hidden" onclick="iniciarSimulado('erros_globais')">
+        🚩 REFAZER QUESTÕES ACUMULADAS <span id="contadorGlobal" class="badge">0</span>
     </button>
 
-    <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">
-        ⚡ CONTINUAR ÚLTIMO SIMULADO
-    </button>
+    <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">⚡ CONTINUAR ÚLTIMO SALVO</button>
 
-    <hr>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
-    <button class="btn-menu" onclick="iniciarSimulado('total')">1 - Simulado Completo (Todas)</button>
+    <button class="btn-menu" onclick="iniciarSimulado('total')">Simulado Completo (Todas)</button>
     
-    <div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-        <label>2 - Escolher Prova: </label>
+    <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+        <label>Escolher Prova: </label>
         <select id="escolhaProva" style="padding: 8px; border-radius: 4px;">
             <option value="1">Prova 01</option>
             <option value="2">Prova 02</option>
@@ -69,11 +67,14 @@
             <option value="11">Prova 11</option>
             <option value="12">Prova 12</option>
          </select>
-        <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar</button>
+        <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar Prova</button>
     </div>
-    <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
+
+    <button class="btn-menu" onclick="iniciarSimulado('random')">40 Questões Aleatórias</button>
     
-    <button style="margin-top: 20px; background: none; color: #95a5a6; text-decoration: underline; font-size: 12px; width: 100%;" onclick="limparHistoricoErros()">Limpar histórico de erros permanentemente</button>
+    <div class="footer-info">
+        <p onclick="limparErros()" style="cursor:pointer; text-decoration: underline;">Limpar histórico de erros</p>
+    </div>
 </div>
 
 <div id="quiz" class="container hidden">
@@ -86,17 +87,12 @@
         <button class="btn-next" id="avancar" onclick="mudarQuestao(1)">Próxima →</button>
         <button class="btn-next hidden" id="finalizar" onclick="verResultado()">Finalizar Simulado</button>
     </div>
-
-    <div class="control-btns">
-        <button class="btn-exit" onclick="sairSemSalvar()">Sair</button>
-        <button class="btn-pause" onclick="salvarEPausar()">Pausar e Salvar</button>
-    </div>
 </div>
 
 <div id="resultado" class="container hidden">
     <h2 id="placar" style="text-align: center;"></h2>
     <div id="detalhes"></div>
-    <button class="btn-menu" onclick="reiniciarTudo()">Voltar ao Menu Principal</button>
+    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu Principal</button>
 </div>
 
 <script>
@@ -610,77 +606,50 @@ const bancoQuestoes = [
 let questoesAtuais = [];
 let indexAtual = 0;
 let respostasUsuario = [];
-let modoErros = false;
 
 window.onload = function() {
-    atualizarBadgeErros();
+    atualizarBotaoErros();
     if (localStorage.getItem('progressoDouglas')) {
         document.getElementById('btnRetomar').classList.remove('hidden');
     }
 };
 
-function atualizarBadgeErros() {
-    const errosGuardados = JSON.parse(localStorage.getItem('bancoErrosDouglas') || "[]");
-    const btn = document.getElementById('btnBancoErros');
-    const badge = document.getElementById('countErros');
+function atualizarBotaoErros() {
+    const listaErros = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
+    const btn = document.getElementById('btnRefazerTudoErrado');
+    const contador = document.getElementById('contadorGlobal');
     
-    badge.innerText = errosGuardados.length;
-    btn.disabled = errosGuardados.length === 0;
+    if (listaErros.length > 0) {
+        btn.classList.remove('hidden');
+        contador.innerText = listaErros.length;
+    } else {
+        btn.classList.add('hidden');
+    }
 }
 
 function iniciarSimulado(tipo) {
-    const escolha = document.getElementById('escolhaProva').value;
-    modoErros = false;
+    const provaId = document.getElementById('escolhaProva').value;
 
-    if (tipo === 'total') {
+    if (tipo === 'especifica') {
+        questoesAtuais = bancoQuestoes.filter(q => q.p == provaId);
+    } else if (tipo === 'erros_globais') {
+        questoesAtuais = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
+    } else if (tipo === 'total') {
         questoesAtuais = [...bancoQuestoes];
-    } else if (tipo === 'especifica') {
-        questoesAtuais = bancoQuestoes.filter(q => q.p == escolha);
     } else if (tipo === 'random') {
         questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
-    } else if (tipo === 'erros') {
-        questoesAtuais = JSON.parse(localStorage.getItem('bancoErrosDouglas') || "[]");
-        modoErros = true;
     }
-
-    if (questoesAtuais.length === 0) return alert("Nenhum dado encontrado!");
 
     indexAtual = 0;
     respostasUsuario = new Array(questoesAtuais.length).fill(null);
-    exibirQuiz();
-}
-
-function salvarEPausar() {
-    const dados = { questoes: questoesAtuais, index: indexAtual, respostas: respostasUsuario };
-    localStorage.setItem('progressoDouglas', JSON.stringify(dados));
-    alert("Progresso salvo!");
-    location.reload();
-}
-
-function sairSemSalvar() {
-    if(confirm("Sair agora?")) location.reload();
-}
-
-function retomarSimulado() {
-    const salvo = JSON.parse(localStorage.getItem('progressoDouglas'));
-    if (salvo) {
-        questoesAtuais = salvo.questoes;
-        indexAtual = salvo.index;
-        respostasUsuario = salvo.respostas;
-        exibirQuiz();
-    }
-}
-
-function exibirQuiz() {
     document.getElementById('menu').classList.add('hidden');
-    document.getElementById('resultado').classList.add('hidden');
     document.getElementById('quiz').classList.remove('hidden');
     mostrarQuestao();
 }
 
 function mostrarQuestao() {
     const q = questoesAtuais[indexAtual];
-    document.getElementById('progresso').innerText = (modoErros ? "REVISANDO ERROS: " : "Simulado: ") + `Questão ${indexAtual + 1} de ${questoesAtuais.length}`;
+    document.getElementById('progresso').innerText = `Questão ${indexAtual + 1} de ${questoesAtuais.length}`;
     document.getElementById('pergunta').innerText = q.q;
     
     let html = "";
@@ -706,54 +675,56 @@ function mudarQuestao(p) {
 }
 
 function verResultado() {
-    localStorage.removeItem('progressoDouglas');
     document.getElementById('quiz').classList.add('hidden');
     document.getElementById('resultado').classList.remove('hidden');
     
     let acertos = 0;
     let html = "";
-    
-    // Pegar erros já existentes para não duplicar
-    let bancoErros = JSON.parse(localStorage.getItem('bancoErrosDouglas') || "[]");
+    let listaErros = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
 
     questoesAtuais.forEach((q, i) => {
         const acertou = respostasUsuario[i] === q.r;
         if(acertou) {
             acertos++;
-            // Se o usuário acertou em modo de revisão, removemos a questão do banco de erros
-            bancoErros = bancoErros.filter(item => item.q !== q.q);
+            // Se acertou, removemos da lista de erros acumulados (caso estivesse lá)
+            listaErros = listaErros.filter(item => item.q !== q.q);
         } else {
-            // Se errou, adicionamos ao banco de erros (se já não estiver lá)
-            const jaExiste = bancoErros.find(item => item.q === q.q);
-            if (!jaExiste) {
-                bancoErros.push(q);
+            // Se errou, adiciona na lista se já não estiver lá
+            if (!listaErros.find(item => item.q === q.q)) {
+                listaErros.push(q);
             }
         }
 
         html += `<div class="result-card">
-            <p><strong>${i+1}. ${q.q}</strong></p>
+            <p><strong>${q.q}</strong></p>
             <p>Sua Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Não respondida'}</span></p>
             ${!acertou?`<p>Correta: <span class="correct">${q.o[q.r]}</span></p>`:''}
         </div>`;
     });
 
-    // Salvar o banco de erros atualizado
-    localStorage.setItem('bancoErrosDouglas', JSON.stringify(bancoErros));
-    
-    document.getElementById('placar').innerText = `Resultado: ${acertos} de ${questoesAtuais.length}`;
+    localStorage.setItem('bancoErrosAcumulados', JSON.stringify(listaErros));
+    document.getElementById('placar').innerText = `Total: ${acertos} de ${questoesAtuais.length}`;
     document.getElementById('detalhes').innerHTML = html;
-    atualizarBadgeErros();
 }
 
-function limparHistoricoErros() {
-    if(confirm("Isso apagará todas as questões salvas no seu banco de erros. Confirmar?")) {
-        localStorage.removeItem('bancoErrosDouglas');
-        atualizarBadgeErros();
+function limparErros() {
+    if(confirm("Deseja apagar todos os erros acumulados?")) {
+        localStorage.removeItem('bancoErrosAcumulados');
+        location.reload();
     }
 }
 
-function reiniciarTudo() { location.reload(); }
+function retomarSimulado() {
+    const salvo = JSON.parse(localStorage.getItem('progressoDouglas'));
+    if (salvo) {
+        questoesAtuais = salvo.questoes;
+        indexAtual = salvo.index;
+        respostasUsuario = salvo.respostas;
+        document.getElementById('menu').classList.add('hidden');
+        document.getElementById('quiz').classList.remove('hidden');
+        mostrarQuestao();
+    }
+}
 </script>
-
 </body>
 </html>
