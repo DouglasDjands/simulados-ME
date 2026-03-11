@@ -9,31 +9,30 @@
         .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .hidden { display: none; }
         h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        
         .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .btn-menu:hover { background-color: #2980b9; }
         
-        /* Botão de Erros Acumulados */
-        .btn-acumulado { background-color: #e74c3c !important; border: 2px solid #c0392b; position: relative; }
-        .btn-acumulado:hover { background-color: #c0392b !important; }
+        /* Botões de Erro e Retomar */
+        .btn-acumulado { background-color: #e74c3c !important; border: 2px solid #c0392b; }
+        .btn-continuar { background-color: #e67e22 !important; font-weight: bold; border: 2px solid #d35400; }
         .badge { background: white; color: #e74c3c; padding: 2px 10px; border-radius: 20px; margin-left: 10px; font-size: 14px; }
-        
-        .btn-continuar { background-color: #e67e22 !important; }
         
         .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
         .option:hover { background: #eef2f3; border-color: #3498db; }
         .selected { background: #d6eaf8 !important; border-color: #3498db !important; }
         
         .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
-        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .control-btns { display: flex; justify-content: center; margin-top: 15px; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+        
+        button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-prev { background: #95a5a6; color: white; flex: 1; }
         .btn-next { background: #27ae60; color: white; flex: 1; }
+        .btn-exit { background: #e74c3c; color: white; }
+        .btn-pause { background: #f39c12; color: white; }
         
-        .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
         .correct { color: #27ae60; font-weight: bold; }
         .wrong { color: #e74c3c; font-weight: bold; }
-        
-        .footer-info { text-align: center; margin-top: 20px; font-size: 12px; color: #95a5a6; }
+        .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
     </style>
 </head>
 <body>
@@ -45,14 +44,16 @@
         🚩 REFAZER QUESTÕES ACUMULADAS <span id="contadorGlobal" class="badge">0</span>
     </button>
 
-    <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">⚡ CONTINUAR ÚLTIMO SALVO</button>
+    <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">
+        ⚡ CONTINUAR ONDE PAREI
+    </button>
 
-    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+    <hr style="border:0; border-top: 1px solid #eee; margin: 20px 0;">
 
-    <button class="btn-menu" onclick="iniciarSimulado('total')">Simulado Completo (Todas)</button>
+    <button class="btn-menu" onclick="iniciarSimulado('total')">1 - Simulado Completo (Todas)</button>
     
-    <div style="margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
-        <label>Escolher Prova: </label>
+    <div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+        <label>2 - Escolher Prova: </label>
         <select id="escolhaProva" style="padding: 8px; border-radius: 4px;">
             <option value="1">Prova 01</option>
             <option value="2">Prova 02</option>
@@ -67,14 +68,9 @@
             <option value="11">Prova 11</option>
             <option value="12">Prova 12</option>
          </select>
-        <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar Prova</button>
+        <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar</button>
     </div>
-
-    <button class="btn-menu" onclick="iniciarSimulado('random')">40 Questões Aleatórias</button>
-    
-    <div class="footer-info">
-        <p onclick="limparErros()" style="cursor:pointer; text-decoration: underline;">Limpar histórico de erros</p>
-    </div>
+    <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
 </div>
 
 <div id="quiz" class="container hidden">
@@ -87,12 +83,17 @@
         <button class="btn-next" id="avancar" onclick="mudarQuestao(1)">Próxima →</button>
         <button class="btn-next hidden" id="finalizar" onclick="verResultado()">Finalizar Simulado</button>
     </div>
+
+    <div class="control-btns">
+        <button class="btn-exit" onclick="sairSemSalvar()">Sair sem Salvar</button>
+        <button class="btn-pause" onclick="salvarEPausar()">Pausar e Salvar</button>
+    </div>
 </div>
 
 <div id="resultado" class="container hidden">
     <h2 id="placar" style="text-align: center;"></h2>
     <div id="detalhes"></div>
-    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu Principal</button>
+    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu</button>
 </div>
 
 <script>
@@ -628,20 +629,21 @@ function atualizarBotaoErros() {
 }
 
 function iniciarSimulado(tipo) {
-    const provaId = document.getElementById('escolhaProva').value;
+    const escolha = document.getElementById('escolhaProva').value;
 
-    if (tipo === 'especifica') {
-        questoesAtuais = bancoQuestoes.filter(q => q.p == provaId);
-    } else if (tipo === 'erros_globais') {
-        questoesAtuais = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
-    } else if (tipo === 'total') {
-        questoesAtuais = [...bancoQuestoes];
-    } else if (tipo === 'random') {
-        questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
-    }
+    if (tipo === 'total') questoesAtuais = [...bancoQuestoes];
+    else if (tipo === 'especifica') questoesAtuais = bancoQuestoes.filter(q => q.p == escolha);
+    else if (tipo === 'random') questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
+    else if (tipo === 'erros_globais') questoesAtuais = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
+
+    if (questoesAtuais.length === 0) return alert("Nenhuma questão encontrada!");
 
     indexAtual = 0;
     respostasUsuario = new Array(questoesAtuais.length).fill(null);
+    exibirQuiz();
+}
+
+function exibirQuiz() {
     document.getElementById('menu').classList.add('hidden');
     document.getElementById('quiz').classList.remove('hidden');
     mostrarQuestao();
@@ -674,7 +676,31 @@ function mudarQuestao(p) {
     mostrarQuestao();
 }
 
+function salvarEPausar() {
+    const dados = { questoes: questoesAtuais, index: indexAtual, respostas: respostasUsuario };
+    localStorage.setItem('progressoDouglas', JSON.stringify(dados));
+    alert("Progresso salvo com sucesso!");
+    location.reload();
+}
+
+function sairSemSalvar() {
+    if(confirm("Tem certeza? O progresso desta sessão será perdido.")) {
+        location.reload();
+    }
+}
+
+function retomarSimulado() {
+    const salvo = JSON.parse(localStorage.getItem('progressoDouglas'));
+    if (salvo) {
+        questoesAtuais = salvo.questoes;
+        indexAtual = salvo.index;
+        respostasUsuario = salvo.respostas;
+        exibirQuiz();
+    }
+}
+
 function verResultado() {
+    localStorage.removeItem('progressoDouglas');
     document.getElementById('quiz').classList.add('hidden');
     document.getElementById('resultado').classList.remove('hidden');
     
@@ -686,18 +712,16 @@ function verResultado() {
         const acertou = respostasUsuario[i] === q.r;
         if(acertou) {
             acertos++;
-            // Se acertou, removemos da lista de erros acumulados (caso estivesse lá)
             listaErros = listaErros.filter(item => item.q !== q.q);
         } else {
-            // Se errou, adiciona na lista se já não estiver lá
             if (!listaErros.find(item => item.q === q.q)) {
                 listaErros.push(q);
             }
         }
 
         html += `<div class="result-card">
-            <p><strong>${q.q}</strong></p>
-            <p>Sua Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Não respondida'}</span></p>
+            <p><strong>${i+1}. ${q.q}</strong></p>
+            <p>Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Vazio'}</span></p>
             ${!acertou?`<p>Correta: <span class="correct">${q.o[q.r]}</span></p>`:''}
         </div>`;
     });
@@ -706,25 +730,10 @@ function verResultado() {
     document.getElementById('placar').innerText = `Total: ${acertos} de ${questoesAtuais.length}`;
     document.getElementById('detalhes').innerHTML = html;
 }
-
-function limparErros() {
-    if(confirm("Deseja apagar todos os erros acumulados?")) {
-        localStorage.removeItem('bancoErrosAcumulados');
-        location.reload();
-    }
-}
-
-function retomarSimulado() {
-    const salvo = JSON.parse(localStorage.getItem('progressoDouglas'));
-    if (salvo) {
-        questoesAtuais = salvo.questoes;
-        indexAtual = salvo.index;
-        respostasUsuario = salvo.respostas;
-        document.getElementById('menu').classList.add('hidden');
-        document.getElementById('quiz').classList.remove('hidden');
-        mostrarQuestao();
-    }
-}
 </script>
+
+<footer style="text-align: center; padding: 20px; font-family: sans-serif; color: #555;">
+    <p>Simulado de Ultrassom &copy; 2026 | <strong>Douglas Djands</strong></p>
+</footer>
 </body>
 </html>
