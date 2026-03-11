@@ -12,9 +12,8 @@
         .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .btn-menu:hover { background-color: #2980b9; }
         
-        /* Botões de Erro e Retomar */
         .btn-acumulado { background-color: #e74c3c !important; border: 2px solid #c0392b; }
-        .btn-continuar { background-color: #e67e22 !important; font-weight: bold; border: 2px solid #d35400; }
+        .btn-continuar { background-color: #e67e22 !important; border: 2px solid #d35400; }
         .badge { background: white; color: #e74c3c; padding: 2px 10px; border-radius: 20px; margin-left: 10px; font-size: 14px; }
         
         .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
@@ -33,6 +32,9 @@
         .correct { color: #27ae60; font-weight: bold; }
         .wrong { color: #e74c3c; font-weight: bold; }
         .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
+        
+        .settings-box { margin-top: 30px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; text-align: center; background: #fffaf0; }
+        .btn-clear { background: none; color: #e74c3c; text-decoration: underline; font-size: 12px; margin: 5px; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -71,6 +73,12 @@
         <button class="btn-menu" style="width: auto; display: inline-block; margin-left: 10px; padding: 8px 20px;" onclick="iniciarSimulado('especifica')">Iniciar</button>
     </div>
     <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
+
+    <div class="settings-box">
+        <p style="margin: 0; font-weight: bold; font-size: 13px; color: #7f8c8d;">⚙️ Gerenciar Dados:</p>
+        <button class="btn-clear" onclick="limparApenasErros()">Limpar Banco de Erros</button>
+        <button class="btn-clear" onclick="resetTotal()">Reset Total (Zerar Tudo)</button>
+    </div>
 </div>
 
 <div id="quiz" class="container hidden">
@@ -93,7 +101,7 @@
 <div id="resultado" class="container hidden">
     <h2 id="placar" style="text-align: center;"></h2>
     <div id="detalhes"></div>
-    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu</button>
+    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu Principal</button>
 </div>
 
 <script>
@@ -630,14 +638,12 @@ function atualizarBotaoErros() {
 
 function iniciarSimulado(tipo) {
     const escolha = document.getElementById('escolhaProva').value;
-
     if (tipo === 'total') questoesAtuais = [...bancoQuestoes];
     else if (tipo === 'especifica') questoesAtuais = bancoQuestoes.filter(q => q.p == escolha);
     else if (tipo === 'random') questoesAtuais = [...bancoQuestoes].sort(() => 0.5 - Math.random()).slice(0, 40);
     else if (tipo === 'erros_globais') questoesAtuais = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
 
     if (questoesAtuais.length === 0) return alert("Nenhuma questão encontrada!");
-
     indexAtual = 0;
     respostasUsuario = new Array(questoesAtuais.length).fill(null);
     exibirQuiz();
@@ -653,14 +659,12 @@ function mostrarQuestao() {
     const q = questoesAtuais[indexAtual];
     document.getElementById('progresso').innerText = `Questão ${indexAtual + 1} de ${questoesAtuais.length}`;
     document.getElementById('pergunta').innerText = q.q;
-    
     let html = "";
     q.o.forEach((opt, i) => {
         const sel = respostasUsuario[indexAtual] === i ? 'selected' : '';
         html += `<div class="option ${sel}" onclick="selecionar(${i})">${opt}</div>`;
     });
     document.getElementById('opcoes').innerHTML = html;
-
     document.getElementById('voltar').style.visibility = indexAtual === 0 ? 'hidden' : 'visible';
     document.getElementById('avancar').classList.toggle('hidden', indexAtual === questoesAtuais.length - 1);
     document.getElementById('finalizar').classList.toggle('hidden', indexAtual !== questoesAtuais.length - 1);
@@ -679,14 +683,12 @@ function mudarQuestao(p) {
 function salvarEPausar() {
     const dados = { questoes: questoesAtuais, index: indexAtual, respostas: respostasUsuario };
     localStorage.setItem('progressoDouglas', JSON.stringify(dados));
-    alert("Progresso salvo com sucesso!");
+    alert("Salvo! Até a volta.");
     location.reload();
 }
 
 function sairSemSalvar() {
-    if(confirm("Tem certeza? O progresso desta sessão será perdido.")) {
-        location.reload();
-    }
+    if(confirm("Sair agora? O progresso desta sessão será perdido.")) location.reload();
 }
 
 function retomarSimulado() {
@@ -700,10 +702,9 @@ function retomarSimulado() {
 }
 
 function verResultado() {
-    localStorage.removeItem('progressoDouglas');
+    localStorage.removeItem('progressoDouglas'); // Limpa o "retomar" ao finalizar
     document.getElementById('quiz').classList.add('hidden');
     document.getElementById('resultado').classList.remove('hidden');
-    
     let acertos = 0;
     let html = "";
     let listaErros = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
@@ -714,21 +715,29 @@ function verResultado() {
             acertos++;
             listaErros = listaErros.filter(item => item.q !== q.q);
         } else {
-            if (!listaErros.find(item => item.q === q.q)) {
-                listaErros.push(q);
-            }
+            if (!listaErros.find(item => item.q === q.q)) listaErros.push(q);
         }
-
-        html += `<div class="result-card">
-            <p><strong>${i+1}. ${q.q}</strong></p>
-            <p>Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Vazio'}</span></p>
-            ${!acertou?`<p>Correta: <span class="correct">${q.o[q.r]}</span></p>`:''}
-        </div>`;
+        html += `<div class="result-card"><p><strong>${i+1}. ${q.q}</strong></p><p>Sua Resposta: <span class="${acertou?'correct':'wrong'}">${respostasUsuario[i]!==null?q.o[respostasUsuario[i]]:'Vazio'}</span></p>${!acertou?`<p>Correta: <span class="correct">${q.o[q.r]}</span></p>`:''}</div>`;
     });
 
     localStorage.setItem('bancoErrosAcumulados', JSON.stringify(listaErros));
     document.getElementById('placar').innerText = `Total: ${acertos} de ${questoesAtuais.length}`;
     document.getElementById('detalhes').innerHTML = html;
+}
+
+// FUNÇÕES DE LIMPEZA
+function limparApenasErros() {
+    if(confirm("Apagar todas as questões do banco de erros acumulados?")) {
+        localStorage.removeItem('bancoErrosAcumulados');
+        location.reload();
+    }
+}
+
+function resetTotal() {
+    if(confirm("AVISO: Isso apagará seu banco de erros E seu progresso salvo. Deseja continuar?")) {
+        localStorage.clear();
+        location.reload();
+    }
 }
 </script>
 
