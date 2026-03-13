@@ -16,9 +16,18 @@
         .btn-continuar { background-color: #e67e22 !important; border: 2px solid #d35400; }
         .badge { background: white; color: #e74c3c; padding: 2px 10px; border-radius: 20px; margin-left: 10px; font-size: 14px; }
         
-        .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        /* Estilos das Opções */
+        .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
         .option:hover { background: #eef2f3; border-color: #3498db; }
-        .selected { background: #d6eaf8 !important; border-color: #3498db !important; }
+        
+        /* Estilos de Feedback Imediato */
+        .correct-fill { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
+        .correct-fill::after { content: " ✓ (Correta)"; float: right; font-size: 12px; }
+        
+        .wrong-fill { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; font-weight: bold; }
+        .wrong-fill::after { content: " ✗ (Incorreta)"; float: right; font-size: 12px; }
+
+        .disabled { pointer-events: none; opacity: 0.8; }
         
         .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
         .control-btns { display: flex; justify-content: center; margin-top: 15px; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
@@ -43,7 +52,7 @@
     <h1>Simulado de Inspeção (ME)</h1>
     
     <button id="btnRefazerTudoErrado" class="btn-menu btn-acumulado hidden" onclick="iniciarSimulado('erros_globais')">
-        🚩 REFAZER QUESTÕES ACUMULADAS <span id="contadorGlobal" class="badge">0</span>
+        🚩 REFAZER QUESTÕES ERRADAS <span id="contadorGlobal" class="badge">0</span>
     </button>
 
     <button id="btnRetomar" class="btn-menu btn-continuar hidden" onclick="retomarSimulado()">
@@ -103,7 +112,7 @@
     <div id="detalhes"></div>
     <button class="btn-menu" onclick="location.reload()">Voltar ao Menu Principal</button>
 </div>
-
+    
 <script>
 const bancoQuestoes = [ 
     // PROVA 01 
@@ -659,11 +668,25 @@ function mostrarQuestao() {
     const q = questoesAtuais[indexAtual];
     document.getElementById('progresso').innerText = `Questão ${indexAtual + 1} de ${questoesAtuais.length}`;
     document.getElementById('pergunta').innerText = q.q;
+    
     let html = "";
+    const jaRespondeu = respostasUsuario[indexAtual] !== null;
+
     q.o.forEach((opt, i) => {
-        const sel = respostasUsuario[indexAtual] === i ? 'selected' : '';
-        html += `<div class="option ${sel}" onclick="selecionar(${i})">${opt}</div>`;
+        let classeExtra = "";
+        if (jaRespondeu) {
+            // Logica de Cores Imediatas
+            if (i === q.r) {
+                classeExtra = "correct-fill disabled"; // A certa sempre fica verde
+            } else if (i === respostasUsuario[indexAtual]) {
+                classeExtra = "wrong-fill disabled"; // Se ele clicou na errada, fica vermelho
+            } else {
+                classeExtra = "disabled"; // Outras ficam inativas
+            }
+        }
+        html += `<div class="option ${classeExtra}" onclick="selecionar(${i})">${opt}</div>`;
     });
+
     document.getElementById('opcoes').innerHTML = html;
     document.getElementById('voltar').style.visibility = indexAtual === 0 ? 'hidden' : 'visible';
     document.getElementById('avancar').classList.toggle('hidden', indexAtual === questoesAtuais.length - 1);
@@ -671,8 +694,11 @@ function mostrarQuestao() {
 }
 
 function selecionar(i) {
-    respostasUsuario[indexAtual] = i;
-    mostrarQuestao();
+    // Só permite selecionar se ainda não houver resposta para esta questão
+    if (respostasUsuario[indexAtual] === null) {
+        respostasUsuario[indexAtual] = i;
+        mostrarQuestao(); // Atualiza para mostrar feedback imediatamente
+    }
 }
 
 function mudarQuestao(p) {
@@ -702,7 +728,7 @@ function retomarSimulado() {
 }
 
 function verResultado() {
-    localStorage.removeItem('progressoDouglas'); // Limpa o "retomar" ao finalizar
+    localStorage.removeItem('progressoDouglas');
     document.getElementById('quiz').classList.add('hidden');
     document.getElementById('resultado').classList.remove('hidden');
     let acertos = 0;
@@ -725,7 +751,6 @@ function verResultado() {
     document.getElementById('detalhes').innerHTML = html;
 }
 
-// FUNÇÕES DE LIMPEZA
 function limparApenasErros() {
     if(confirm("Apagar todas as questões do banco de erros acumulados?")) {
         localStorage.removeItem('bancoErrosAcumulados');
@@ -746,3 +771,4 @@ function resetTotal() {
 </footer>
 </body>
 </html>
+
