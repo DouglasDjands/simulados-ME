@@ -5,10 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulado de Inspeção - Douglas</title>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f7f6; color: #333; line-height: 1.6; padding: 10px; }
-        .container { max-width: 800px; margin: 20px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        /* Variáveis de Cores para facilitar a troca de tema */
+        :root {
+            --bg-body: #f4f7f6;
+            --bg-container: #ffffff;
+            --text-main: #333333;
+            --text-secondary: #7f8c8d;
+            --border-color: #eeeeee;
+            --option-bg: #f9f9f9;
+            --option-hover: #eef2f3;
+        }
+
+        /* Cores do Modo Escuro */
+        [data-theme="dark"] {
+            --bg-body: #121212;
+            --bg-container: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+            --option-bg: #2a2a2a;
+            --option-hover: #3d3d3d;
+        }
+
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--bg-body); color: var(--text-main); line-height: 1.6; padding: 10px; transition: 0.3s; }
+        .container { max-width: 800px; margin: 20px auto; background: var(--bg-container); padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); position: relative; }
         .hidden { display: none; }
-        h1 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        
+        h1 { color: #3498db; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        
+        /* Botão de Alternar Tema */
+        .theme-toggle { position: fixed; top: 20px; right: 20px; background: #3498db; color: white; border: none; padding: 10px; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+
         .btn-menu { display: block; width: 100%; padding: 15px; margin: 10px 0; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; font-weight: bold; }
         .btn-menu:hover { background-color: #2980b9; }
         
@@ -16,21 +43,16 @@
         .btn-continuar { background-color: #e67e22 !important; border: 2px solid #d35400; }
         .badge { background: white; color: #e74c3c; padding: 2px 10px; border-radius: 20px; margin-left: 10px; font-size: 14px; }
         
-        /* Estilos das Opções */
-        .option { background: #f9f9f9; border: 2px solid #eee; padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; position: relative; }
-        .option:hover { background: #eef2f3; border-color: #3498db; }
+        .option { background: var(--option-bg); border: 2px solid var(--border-color); padding: 12px; margin: 8px 0; border-radius: 8px; cursor: pointer; transition: 0.2s; color: var(--text-main); }
+        .option:hover { background: var(--option-hover); border-color: #3498db; }
         
-        /* Estilos de Feedback Imediato */
-        .correct-fill { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724; font-weight: bold; }
-        .correct-fill::after { content: " ✓ (Correta)"; float: right; font-size: 12px; }
-        
-        .wrong-fill { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24; font-weight: bold; }
-        .wrong-fill::after { content: " ✗ (Incorreta)"; float: right; font-size: 12px; }
-
+        /* Feedback */
+        .correct-fill { background-color: #d4edda !important; border-color: #28a745 !important; color: #155724 !important; font-weight: bold; }
+        .wrong-fill { background-color: #f8d7da !important; border-color: #dc3545 !important; color: #721c24 !important; font-weight: bold; }
         .disabled { pointer-events: none; opacity: 0.8; }
         
         .nav-btns { display: flex; justify-content: space-between; margin-top: 25px; gap: 10px; }
-        .control-btns { display: flex; justify-content: center; margin-top: 15px; gap: 10px; border-top: 1px solid #eee; padding-top: 15px; }
+        .control-btns { display: flex; justify-content: center; margin-top: 15px; gap: 10px; border-top: 1px solid var(--border-color); padding-top: 15px; }
         
         button { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-prev { background: #95a5a6; color: white; flex: 1; }
@@ -40,13 +62,22 @@
         
         .correct { color: #27ae60; font-weight: bold; }
         .wrong { color: #e74c3c; font-weight: bold; }
-        .result-card { border-bottom: 1px solid #ddd; padding: 15px 0; }
+        .result-card { border-bottom: 1px solid var(--border-color); padding: 15px 0; }
         
-        .settings-box { margin-top: 30px; padding: 15px; border: 1px dashed #ccc; border-radius: 8px; text-align: center; background: #fffaf0; }
+        .settings-box { margin-top: 30px; padding: 15px; border: 1px dashed var(--text-secondary); border-radius: 8px; text-align: center; }
         .btn-clear { background: none; color: #e74c3c; text-decoration: underline; font-size: 12px; margin: 5px; border: none; cursor: pointer; }
+
+        /* Placar Estilo */
+        .score-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .score-board { display: flex; gap: 8px; }
+        .score-item { display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 8px; font-weight: bold; font-size: 16px; }
+        .score-correct { background-color: rgba(40, 167, 69, 0.2); color: #28a745; border: 1px solid #28a745; }
+        .score-wrong { background-color: rgba(220, 53, 69, 0.2); color: #dc3545; border: 1px solid #dc3545; }
     </style>
 </head>
 <body>
+
+<button class="theme-toggle" onclick="toggleTheme()" title="Trocar Tema">🌓</button>
 
 <div id="menu" class="container">
     <h1>Simulado de Inspeção (ME)</h1>
@@ -63,9 +94,9 @@
 
     <button class="btn-menu" onclick="iniciarSimulado('total')">1 - Simulado Completo (Todas)</button>
     
-    <div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; text-align: center;">
+    <div style="margin: 20px 0; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; text-align: center;">
         <label>2 - Escolher Prova: </label>
-        <select id="escolhaProva" style="padding: 8px; border-radius: 4px;">
+        <select id="escolhaProva" style="padding: 8px; border-radius: 4px; background: var(--option-bg); color: var(--text-main);">
             <option value="1">Prova 01</option>
             <option value="2">Prova 02</option>
             <option value="3">Prova 03</option>
@@ -84,14 +115,25 @@
     <button class="btn-menu" onclick="iniciarSimulado('random')">3 - 40 Questões Aleatórias</button>
 
     <div class="settings-box">
-        <p style="margin: 0; font-weight: bold; font-size: 13px; color: #7f8c8d;">⚙️ Gerenciar Dados:</p>
+        <p style="margin: 0; font-weight: bold; font-size: 13px; color: var(--text-secondary);">⚙️ Gerenciar Dados:</p>
         <button class="btn-clear" onclick="limparApenasErros()">Limpar Banco de Erros</button>
         <button class="btn-clear" onclick="resetTotal()">Reset Total (Zerar Tudo)</button>
     </div>
 </div>
 
 <div id="quiz" class="container hidden">
-    <div id="progresso" style="font-weight: bold; color: #7f8c8d; margin-bottom: 10px;"></div>
+    <div class="score-header">
+        <div id="progresso" style="font-weight: bold; color: var(--text-secondary);"></div>
+        <div class="score-board">
+            <div class="score-item score-correct">
+                <span>✓</span> <span id="count-correct">0</span>
+            </div>
+            <div class="score-item score-wrong">
+                <span>✗</span> <span id="count-wrong">0</span>
+            </div>
+        </div>
+    </div>
+
     <div id="pergunta" style="font-size: 18px; margin-bottom: 20px; font-weight: 500;"></div>
     <div id="opcoes"></div>
     
@@ -102,15 +144,15 @@
     </div>
 
     <div class="control-btns">
-        <button class="btn-exit" onclick="sairSemSalvar()">Sair sem Salvar</button>
-        <button class="btn-pause" onclick="salvarEPausar()">Pausar e Salvar</button>
+        <button class="btn-exit" onclick="sairSemSalvar()">Sair</button>
+        <button class="btn-pause" onclick="salvarEPausar()">Salvar e Pausar</button>
     </div>
 </div>
 
 <div id="resultado" class="container hidden">
     <h2 id="placar" style="text-align: center;"></h2>
     <div id="detalhes"></div>
-    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu Principal</button>
+    <button class="btn-menu" onclick="location.reload()">Voltar ao Menu</button>
 </div>
     
 <script>
@@ -215,7 +257,7 @@ const bancoQuestoes = [
     {p:3, q:"13) A resistência ao envelhecimento é uma vantagem dos cabeçotes que usam cristais de:", o:["Sulfato de lítio.", "Titanato de bário.", "Quartzo.", "Sais de rochelle."], r:2},
     {p:3, q:"14) Um fluxo de curta duração e intenso de energia elétrica alternada é denominado:", o:["Onda contínua.", "Pico de voltagem de corrente contínua.", "Onda ultrassônica.", "Pulso."], r:3},
     {p:3, q:"15) Um aparelho para teste por meio de ultrasson em cuja a tela os pulsos representam a magnitude de energia refletida em função do tempo ou do percurso do som na peça possui:", o:["Uma tela de onda contínua.", "Uma apresentação tipo 'A-Scan'.", "Uma apresentação tipo 'C-Scan'.", "Uma apresentação tipo 'B-Scan'."], r:1},
-    {p:3, q:"16) Podem ocorrer erros significativos na medida de espessura por meio de ultrason se:", o:["A frequência variar numa razão constante.", "A água for usada como acoplante entre o cabeçote e a peça em exame.", "Nenhuma destas respostas está certa.", "For tomado um valor diferente para a velocidade de propagação do ultrassom no material da peça em consideração."], r:3},
+    {p:3, q:"16) Podem ocorrer erros significativos na medida de espessura por meio de ultrasson se:", o:["A frequência variar numa razão constante.", "A água for usada como acoplante entre o cabeçote e a peça em exame.", "Nenhuma destas respostas está certa.", "For tomado um valor diferente para a velocidade de propagação do ultrassom no material da peça em consideração."], r:3},
     {p:3, q:"17) Os transdutores geralmente usados em cabeçotes para exame por meio de ultrassom utilizam:", o:["Princípios piezelétricos.", "Princípios de conversão de modo.", "Nenhuma das respostas está correta.", "Princípios de magnetoestricção."], r:0},
     {p:3, q:"18) A propriedade que possuem certos materias de transformar energia mecânica em elétrica e vice-versa é denominada:", o:["Conversão de modo.", "Refração.", "Impedância oposta.", "Efeito piezelétrico."], r:3},
     {p:3, q:"19) A maior dimensão de uma descontinuidade existente num bloco de aluminio é paralela à superficie que foi preparada para seu exame por meio de ultrasson. Se a espessura do bloco for 6 polegadas e a descontinuidade estiver numa profundidade de 3 polegadas como ela sera mais facilmente detectada?", o:["Usando um cabeçote angular.", "Examinando a peça com ondas superficiais.", "Examinando a peça com ondas de Lamb.", "Usando um cabeçote normal."], r:3},
@@ -235,7 +277,7 @@ const bancoQuestoes = [
     {p:3, q:"33) Transdutores que contém dois cristais individuais são frequentemente referidos aos do tipo:", o:["transdutores duplo-cristal.", "transdutores SE.", "transdutores de duplos elementos.", "as alternativas (a) e (b) são corretas."], r:3},
     {p:3, q:"34) A frequência fundamental de um cristal de quartzo é principalmente função:", o:["Do comprimento do pulso de voltagem aplicado.", "Da caracteristica de amplificação do amplificador de pulso do aparelho.", "Da espessura do cristal de quartzo.", "Nenhuma das respostas está certa."], r:2},
     {p:3, q:"35) A indicação na tela do osciloscópio que representa a superfície oposta àquela em que se apoia o cabeçote na peça é denominada:", o:["Pico.", "Eco de fundo.", "Eco principal.", "Pulso inicial."], r:1},
-    {p:3, q:"36) No exame por imersão, a posição do cabeçote é frequentemente variada para transmitiro som par a superficie da peça em exame de modo que incida nesta em varios ângulos. Este procedimento é denominado:", o:["Dispersão.", "Teste de reflexão.", "Refração.", "Angulação."], r:3},
+    {p:3, q:"36) No exame por imersão, a posição do cabeçote é frequentemente variada para transmitir o som para superficie da peça em exame de modo que incida nesta em varios ângulos. Este procedimento é denominado:", o:["Dispersão.", "Teste de reflexão.", "Refração.", "Angulação."], r:3},
     {p:3, q:"37) O processo para comparar um instrumento  ou dispositivo com um padrão é denominado:", o:["Angulação.", "Atenuação.", "Calibração.", "Correlação."], r:2},
     {p:3, q:"38) Uma onda mecânica produzida por um tradutor ultrassônico com frequencia de 4 MHz, se propagando no aço (6000 m/s) terá comprimento de onda de:", o:["2 mm.", "1,5 mm.", "4 mm.", "3 mm."], r:1},
     {p:3, q:"39) A inclinação da superfície refletora de uma descontinuidade com relação à superfície da peça por onde é feito o exame é denominada:", o:["Ângulo de incidência.", "Ângulo de refração.", "A orientação da descontinuidade.", "Nenhuma das respostas está correta."], r:2},
@@ -245,14 +287,14 @@ const bancoQuestoes = [
     {p:4, q:"01) O ângulo de incidência é .......... ângulo de reflexão.", o:["Igual ao.", "Menor que o.", "Nenhuma das respostas está correta.", "Maior do que o."], r:0},
     {p:4, q:"02) Cabeçotes construídos de forma que o cristal se apoie numa cunha plástica, sendo feito através desta o contato com a peça em exame, são geralmente usados para:", o:["Exames com feixe de ondas ultrassônicas em ângulo com à superfície da peça.", "Exame por meio de ultrassom usando a técnica de imersão.", "Nenhuma das respostas está correta.", "Exames com feixe de ondas ultrassônicas normal à superfície da peça."], r:0},
     {p:4, q:"03) A fórmula senA/velA = senB/velB é denominada:", o:["Fórmula da razão da impedância acústica.", "Fórmula da conversão de fase.", "Formula da zona de Fresnel.", "Lei de Snell."], r:3},
-    {p:4, q:"04) A fórmula senA/velA = senB/velB é usada para determinar:", o:["Relações angulares.", "A quantidade de energi do som que foi refletida.", "A impedância acústica.", "Velocidade da fase."], r:0},
+    {p:4, q:"04) A fórmula senA/velA = senB/velB é usada para determinar:", o:["Relações angulares.", "A quantidade de energia do som que foi refletida.", "A impedância acústica.", "Velocidade da fase."], r:0},
     {p:4, q:"05) Em qual dos materiais relacionados abaixo, a velocidade de propagação do ultrassom é maior?", o:["Alumínio.", "Ar.", "Aço inoxidável.", "Água."], r:0},
     {p:4, q:"06) Após atravessar a interface plana que separa dois metais diferentes, um feixe de ondas ultrassônicas muda de direção, fazendo um ângulo diferente com a normal à interface. Este novo ângulo é denominado:", o:["Ângulo de incidência.", "Ângulo de rarefação.", "Ângulo de refração.", "Ângulo de reflexão."], r:2},
     {p:4, q:"07) O ângulo do feixe sônico ao passar da água para o metal será função:", o:["Da relação das impedâncias acústicas da água e do metal.", "Das velocidades relativas do som na água e no metal.", "Da relação entre as densidades da agua e do metal.", "Da frequência das ondas ultrassônicas."], r:1},
     {p:4, q:"08) O ângulo de incidência que corresponde a um ângulo de refração de 90 graus é denominado:", o:["Ângulo normal.", "Ângulo crítico.", "Nenhuma das respostas está correta.", "Angulo de reflexão máxima."], r:1},
     {p:4, q:"09) Quais dos cristais abaixo podem ser utilizados como cristais ultrassônicos:", o:["metaniobato de chumbo.", "titanato de bário.", "sulfato de lítio.", "todos acima podem ser usados."], r:3},
     {p:4, q:"10) O limite entre dois materiais diferentes que estão em contato entre si é denominado:", o:["Rarefator.", "Interface.", "Marcador.", "Refrator."], r:1},
-    {p:4, q:"11) No exame por contato, as ondas de corte podem ser produzidas no metal:", o:["Colocando-se um cristal de quartzo cortado na forma de X diretamente na superfície da peça e usando óleo como acoplante.", "Usando um cabeçote angular, com o transdutor montado numa cunha de plástico, de forma que a direção do som seja inclinada em relação à superfície.","Colocando-se lentes acústicas esféricas na face do transdutor."," Usando um cabeçote angular, com o transdutor montado numa cunha de plástico, de forma que a direção do som seja inclinada em relação à superfície."], r:3},
+    {p:4, q:"11) No exame por contato, as ondas de corte podem ser produzidas no metal:", o:["Colocando-se um cristal de quartzo cortado na forma de X diretamente na superfície da peça e usando óleo como acoplante.", "Usando dois trandutores opostos, um na superfície por onde são introduzidos os sinais e outro na' superfície oposta","Colocando-se lentes acústicas esféricas na face do transdutor."," Usando um cabeçote angular, com o transdutor montado numa cunha de plástico, de forma que a direção do som seja inclinada em relação à superfície."], r:3},
     {p:4, q:"12) Num aparelho para exame por meio de ultrassom, do tipo pulso-eco, o componente que produz sinais que aparecem na tela, e que são usados para medir distâncias, é denominado:", o:["Circuito marcador, ou de tempo.", "Circuito receptor.", "Sincronizador.", "Circuito de varredura."], r:0},
     {p:4, q:"13) A divergência do feixe é função das dimensões de um cristal e do comprimento de onda do feixe transmitido através de um meio, e:", o:["Diminui se a frequência ou diâmetro diminuem.", "Aumenta se a frequência ou o diâmetro do cristal diminuem.", "Diminui se a frequência aumenta e se o diâmetro do cristal diminui.", "Aumenta se a frequência aumenta e se o diâmetro cristal diminui."], r:1},
     {p:4, q:"14) O que ocorre quando um feixe de ondas ultrassônicas atinge uma superfície de dois materiais dissimilares?", o:["Reflexão.", "Refração.", "Reflexão, refração e conversão de modo.", "Conversão de modo."], r:2},
@@ -273,8 +315,8 @@ const bancoQuestoes = [
     {p:4, q:"29) Em qual dos materiais relacionados abaixo a velocidade de propagação do ultrassom é menor?", o:["Água.", "Cobre.", "Aço.", "Alumínio"], r:0},
     {p:4, q:"30) Uma onda muda sua direção de propagação ao atingir o limite do meio em que se desloca. Este fenômeno é denominado:", o:["Reflexão.", "Rarefação.", "Angulação.", "Divergência."], r:0},
     {p:4, q:"31) Ao Incidir com ângulo diferente de 90 graus na interface que separa dois meios de elasticidade e massa específicas diferentes, uma onda ultrassônica continuará se propagando no segundo meio com direção diferente. Este fenômeno é denominado:", o:["Angulação.", "Rarefação.", "Refração.", "Reflexão."], r:2},
-    {p:4, q:"32) Indicaçõesque aparecem na tela de um aparelho de ultrassom, no exame de uma peça por meio de ondas superficiais, podem ser resultantes de:", o:["Descontinuidades superficiais.", "Presença de óleo na superfície da peça.", "Presença de sujeira na superfície da peça.", "Todas as respostas estão corretas."], r:3},
-    {p:4, q:"33) O exame de uma peça por melo de ultrassom, onde o cabeçote está em contato direto com a peça, é denominado:", o:["Exame por meio de ultrassom utilizando cabeçote normal.", " Exame por meio de ultrassom com ondas superficiais.", "Exame por meio de ultrassom utilizando cabeçote angular.", "Todas as respostas estão corretas."], r:3},
+    {p:4, q:"32) Indicações que aparecem na tela de um aparelho de ultrassom, no exame de uma peça por meio de ondas superficiais, podem ser resultantes de:", o:["Descontinuidades superficiais.", "Presença de óleo na superfície da peça.", "Presença de sujeira na superfície da peça.", "Todas as respostas estão corretas."], r:3},
+    {p:4, q:"33) O exame de uma peça por meio de ultrassom, onde o cabeçote está em contato direto com a peça, é denominado:", o:["Exame por meio de ultrassom utilizando cabeçote normal.", " Exame por meio de ultrassom com ondas superficiais.", "Exame por meio de ultrassom utilizando cabeçote angular.", "Todas as respostas estão corretas."], r:3},
     {p:4, q:"34) Quando um feixe de ondas ultrassônicas incide na interface que separa dois materiais desiguais num ângulo diferente de 90 graus, e passa por ela, sua propagação no segundo material será feita em direção diferente, em outro ângulo em relação à normal com a interface, devido a:", o:["Refração.", "Rarefação.", "Compressão.", "Atenuação."], r:0},
     {p:4, q:"35) O ângulo marcado num cabeçote angular corresponde ao ângulo:", o:["Que a direção de propagação do feixe de ondas ultrassônicas emitido pelo cabeçote faz com a normal à superfície por onde é feito o exame de uma peça de aço.", "Do eixo do cabeçote com a normal à superfície.", "Do eixo do cabeçote com o plano da superfície.", "Que a direção de propagação do feixe de ondas ultrassônicas emitido faz com a normal à superfície da peça por onde é feito o exame."], r:0},
     {p:4, q:"36) O ponto de emissão de certo cabeçote angular:", o:["Depende do material da peça  em exame.", "Varia de acordo com o desgaste da sapata.", "Pode ser modificado para reduzir a atenuação das ondas ultrassônicas.", "Não se altera com o uso do cabeçote."], r:1},
@@ -626,17 +668,27 @@ let indexAtual = 0;
 let respostasUsuario = [];
 
 window.onload = function() {
+    // Aplicar tema salvo
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
     atualizarBotaoErros();
     if (localStorage.getItem('progressoDouglas')) {
         document.getElementById('btnRetomar').classList.remove('hidden');
     }
 };
 
+function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+}
+
 function atualizarBotaoErros() {
     const listaErros = JSON.parse(localStorage.getItem('bancoErrosAcumulados') || "[]");
     const btn = document.getElementById('btnRefazerTudoErrado');
     const contador = document.getElementById('contadorGlobal');
-    
     if (listaErros.length > 0) {
         btn.classList.remove('hidden');
         contador.innerText = listaErros.length;
@@ -675,14 +727,9 @@ function mostrarQuestao() {
     q.o.forEach((opt, i) => {
         let classeExtra = "";
         if (jaRespondeu) {
-            // Logica de Cores Imediatas
-            if (i === q.r) {
-                classeExtra = "correct-fill disabled"; // A certa sempre fica verde
-            } else if (i === respostasUsuario[indexAtual]) {
-                classeExtra = "wrong-fill disabled"; // Se ele clicou na errada, fica vermelho
-            } else {
-                classeExtra = "disabled"; // Outras ficam inativas
-            }
+            if (i === q.r) classeExtra = "correct-fill disabled"; 
+            else if (i === respostasUsuario[indexAtual]) classeExtra = "wrong-fill disabled"; 
+            else classeExtra = "disabled"; 
         }
         html += `<div class="option ${classeExtra}" onclick="selecionar(${i})">${opt}</div>`;
     });
@@ -691,14 +738,28 @@ function mostrarQuestao() {
     document.getElementById('voltar').style.visibility = indexAtual === 0 ? 'hidden' : 'visible';
     document.getElementById('avancar').classList.toggle('hidden', indexAtual === questoesAtuais.length - 1);
     document.getElementById('finalizar').classList.toggle('hidden', indexAtual !== questoesAtuais.length - 1);
+    atualizarPlacarAoVivo();
 }
 
 function selecionar(i) {
-    // Só permite selecionar se ainda não houver resposta para esta questão
     if (respostasUsuario[indexAtual] === null) {
         respostasUsuario[indexAtual] = i;
-        mostrarQuestao(); // Atualiza para mostrar feedback imediatamente
+        mostrarQuestao(); 
+        atualizarPlacarAoVivo();
     }
+}
+
+function atualizarPlacarAoVivo() {
+    let acertos = 0;
+    let erros = 0;
+    respostasUsuario.forEach((resp, i) => {
+        if (resp !== null) {
+            if (resp === questoesAtuais[i].r) acertos++;
+            else erros++;
+        }
+    });
+    document.getElementById('count-correct').innerText = acertos;
+    document.getElementById('count-wrong').innerText = erros;
 }
 
 function mudarQuestao(p) {
@@ -709,12 +770,12 @@ function mudarQuestao(p) {
 function salvarEPausar() {
     const dados = { questoes: questoesAtuais, index: indexAtual, respostas: respostasUsuario };
     localStorage.setItem('progressoDouglas', JSON.stringify(dados));
-    alert("Salvo! Até a volta.");
+    alert("Progresso salvo!");
     location.reload();
 }
 
 function sairSemSalvar() {
-    if(confirm("Sair agora? O progresso desta sessão será perdido.")) location.reload();
+    if(confirm("Sair agora?")) location.reload();
 }
 
 function retomarSimulado() {
@@ -752,23 +813,22 @@ function verResultado() {
 }
 
 function limparApenasErros() {
-    if(confirm("Apagar todas as questões do banco de erros acumulados?")) {
+    if(confirm("Zerar banco de erros?")) {
         localStorage.removeItem('bancoErrosAcumulados');
         location.reload();
     }
 }
 
 function resetTotal() {
-    if(confirm("AVISO: Isso apagará seu banco de erros E seu progresso salvo. Deseja continuar?")) {
+    if(confirm("Zerar tudo?")) {
         localStorage.clear();
         location.reload();
     }
 }
 </script>
 
-<footer style="text-align: center; padding: 20px; font-family: sans-serif; color: #555;">
+<footer style="text-align: center; padding: 20px; font-family: sans-serif; color: var(--text-secondary);">
     <p>Simulado de Ultrassom &copy; 2026 | <strong>Douglas Djands</strong></p>
 </footer>
 </body>
 </html>
-
